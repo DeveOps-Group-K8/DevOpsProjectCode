@@ -26,3 +26,7 @@ In second frontend branch
 
 In migrations branch ..
 
+## Commit from 'others branch'
+
+In others branch ..
+
