@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Number Guessing Game - {{ level.capitalize() }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='skyle.jpeg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: white;
+        }
+        h1 {
+            margin-top: 1rem;
+            text-align: center;
+        }
+        p {
+            text-align: center;
+        }
+        .guess-form {
+            text-align: center;
+            margin-top: 1rem;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 20px;  
+            background-color: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+        }
+        .guess-form input[type="number"] {
+            padding: 0.5rem;
+            font-size: 16px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        .guess-form button {
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .guess-form button:hover {
+            background-color: #0056b3;
+        }
+        .guess-form button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .guess-form #message {
+            margin-top: 1rem;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .guess-form button {
+            padding: 0.5rem 1rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .guess-form {
+            animation: fadeIn 1.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        button {
+            transition: transform 0.3s ease-in-out;
+        }
+        button:hover {
+            transform: scale(1.1);
+        }
+
+        .logout-btn {
+            display: inline-block;
+            padding: 0.3rem 1rem;
+            background-color:rgb(99, 152, 209);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }   
+        .logout-btn:hover {
+            background-color: #0056b3;
+        }
+        .music-controls {
+            margin-top: 1rem;
+        }
+        .music-toggle {
+            padding: 0.5rem 1rem;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .music-toggle:hover {
+            background-color: #218838;
+        }
+        .volume-slider {
+            width: 100px;
+            margin-left: 10px;
+        }
+    </style>
+
+</head>
+<body class="mt-0">
+    <img src="{{ url_for('static', filename='header.png') }}" alt="Guess" style="width: 100%; height: 100px;">
+    
+    <div class="container mb-3 text-white text-center">
+        <div class="row">
+            <!-- Navigation Buttons -->
+            <div class="col-md-3">
+                <a href="{{ url_for('dashboard') }}" class="logout-btn" onclick="playClickSound()">Back To Dashboard</a>
+            </div>
+            <!-- Welcome Message -->
+            <div class="col-md-6 text-center text-white">
+                <h1 class="text-white">Welcome, {{ username }}!</h1>
+                <h1 class="text-white">
+                    {{ level.capitalize() }} Level 
+                    ({{ '1-100' if level == 'easy' else '1-200' if level == 'medium' else '1-500' }})
+                </h1>
+            </div>
+            <!-- Game Info -->
+            <div class="col-md-3">
+                <p>Guess the number.</p>
+                <p>You have <strong id="attempts">{{ attempts }}</strong> attempts left.</p>
+                <p>Score: <strong id="score">{{ score }}</strong></p>
+                <p id="result"></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="row">
+            <!-- Sidebar with Image and Leaderboard -->
+            <div class="col-md-3">
+                <img src="{{ url_for('static', filename='number33.png') }}" alt="Guess" style="width: 100%;">
+                <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#leaderboardModal">🏆 View Leaderboard</button>
+                <div class="modal fade" id="leaderboardModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Leaderboard</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <ul id="leaderboardList" class="list-group">
+                                    <!-- Dynamic leaderboard will be inserted here -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Main Game Section -->
+            <div class="col-md-6">
+                <div class="guess-form">
+                    <form id="guessForm" method="POST">
+                        <input type="number" name="guess" id="guess" placeholder="Enter your guess" required><br>
+                        <button id="submitBtn" onclick="checkGuess()">Submit Guess</button><br>
+                        
+                        {% if game_status %}
+                        <div>
+                            {% if game_status == 'win' %}
+                                <h2>Congratulations! You won!</h2>
+                            {% elif game_status == 'loss' %}
+                                <h2>Sorry, you lost. Better luck next time!</h2>
+                            {% endif %}
+                            <a href="{{ url_for('play_game', level=level) }}" class="btn btn-primary">Play Again</a>
+                        </div>
+                        {% endif %}
+                        
+                        <br>
+                        <button onclick="restartGame()">Restart Game</button><br>
+                        <p id="message"></p><br>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Sidebar with Music Controls -->
+            <div class="col-md-3">
+                <img src="{{ url_for('static', filename='number11.png') }}" alt="Guess" style="width: 100%;">
+                <div class="music-controls">
+                    <button class="music-toggle" onclick="toggleMusic()">🎵 Toggle Music</button>
+                    <input type="range" min="0" max="1" step="0.1" value="0.3" class="volume-slider" id="volumeControl" oninput="setVolume(this.value)">
+                </div>
+                <!-- Audio Elements -->
+                <audio id="bgMusic" loop>
+                    <source src="{{ url_for('static', filename='Hello.mp3') }}" type="audio/mpeg">
+                </audio>
+                <audio id="clickSound">
+                    <source src="{{ url_for('static', filename='because.mp3') }}" type="audio/mpeg">
+                </audio>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Declare constants and initialize variables
+        const correctNumber = {{ correct_number }};
+        let remainingAttempts = {{ attempts }};
+        const level = "{{ level }}";
+        const leaderboard = {{ leaderboard | tojson }};
+        console.log("Leaderboard:", leaderboard);
+
+        // Update leaderboard in the modal
+        const leaderboardList = document.getElementById("leaderboardList");
+        leaderboard.forEach((user, index) => {
+            const li = document.createElement("li");
+            li.className = "list-group-item";
+            li.textContent = `${index + 1}. ${user.username} - ${user.score}`;
+            leaderboardList.appendChild(li);
+        });
+
+        // Sounds for success, error, win, and loss
+        const successSound = new Audio("{{ url_for('static', filename='Running.mp3') }}");
+        const errorSound = new Audio("{{ url_for('static', filename='JustDeyPlay.mp3') }}");
+        const winMusic = new Audio("{{ url_for('static', filename='Running.mp3') }}");
+        const loseMusic = new Audio("{{ url_for('static', filename='JustDeyPlay.mp3') }}");
+
+        // Background music setup
+        const bgMusic = document.getElementById("bgMusic");
+        const volumeControl = document.getElementById("volumeControl");
+        bgMusic.volume = 0.3; // Set initial volume
+        bgMusic.play().catch(() => console.log("Auto-play blocked"));
+
+        // Toggle background music
+        function toggleMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play();
+            } else {
+                bgMusic.pause();
+            }
+        }
+
+        // Adjust background music volume
+        function setVolume(value) {
+            bgMusic.volume = value;
+        }
+
+        // Play click sound effect
+        function playClickSound() {
+            const clickSound = document.getElementById("clickSound");
+            clickSound.currentTime = 0;
+            clickSound.play();
+        }
+
+        // Stop background music
+        function stopBackgroundMusic() {
+            if (!bgMusic.paused) {
+                bgMusic.pause();
+            }
+        }
+
+        // Confetti effect for correct guess
+        function launchConfetti() {
+            const count = 200;
+            const defaults = { origin: { y: 0.7 } };
+
+            function fire(particleRatio, opts) {
+                confetti(
+                    Object.assign({}, defaults, opts, {
+                        particleCount: Math.floor(count * particleRatio),
+                    })
+                );
+            }
+
+            fire(0.25, { spread: 26, startVelocity: 55 });
+            fire(0.2, { spread: 60 });
+            fire(0.35, { spread: 100, decay: 0.91 });
+            fire(0.1, { spread: 120 });
+            fire(0.1, { spread: 120, decay: 0.92 });
+        }
+
+        // Check if the user's guess is correct
+        function checkGuess() {
+            const userGuess = document.getElementById("guess").value;
+
+            if (remainingAttempts > 0) {
+                if (userGuess == correctNumber) {
+                    // Correct guess
+                    stopBackgroundMusic();
+                    winMusic.play();
+                    successSound.play();
+                    launchConfetti();
+                    document.getElementById("message").textContent = "🎉 Congratulations! You win!";
+                    document.getElementById("submitBtn").disabled = true; // Disable further guesses
+                } else {
+                    // Incorrect guess
+                    errorSound.play();
+                    document.getElementById("message").textContent =
+                        userGuess < correctNumber
+                            ? "⬆ Too low! Try again."
+                            : "⬇ Too high! Try again.";
+                    remainingAttempts--;
+                    document.getElementById("attempts").textContent = remainingAttempts;
+
+                    if (remainingAttempts === 0) {
+                        stopBackgroundMusic();
+                        loseMusic.play();
+                        document.getElementById("message").textContent =
+                            "😢 Sorry, you lost. Better luck next time!";
+                        document.getElementById("submitBtn").disabled = true; // Disable further guesses
+                    }
+                }
+            }
+        }
+
+        // Attach event listener to the submit button
+        document.getElementById("submitBtn").addEventListener("click", function (event) {
+            event.preventDefault(); // Prevent form submission
+            checkGuess();
+        });
+
+        // Submit guess using Fetch API for server-side validation
+        document.getElementById("guessForm").addEventListener("submit", function (event) {
+            event.preventDefault(); // Prevent form from reloading the page
+
+            const guess = document.getElementById("guess").value;
+
+            fetch("/guess", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                body: `guess=${guess}`,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        // Update attempts and score on the page
+                        document.getElementById("attempts").textContent = data.attempts;
+                        document.getElementById("score").textContent = data.score;
+                        document.getElementById("result").textContent = data.result;
+
+                        // If game over
+                        if (data.result === "Game Over") {
+                            alert("Game Over! Your final score is: " + data.score);
+                        }
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                });
+        });
+
+        // Restart the game
+        function restartGame() {
+            window.location.href = "{{ url_for('play_game', level=level) }}";
+        }
+    </script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.3.1/dist/confetti.browser.min.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
+
+<!-- End of game.html -->
