@@ -9,3 +9,7 @@ In dev.. AGAINNNNN!!!!
 ## Commit from `feat-game-interface`
 
 In feature branch..
+
+## Commit from 'templates branch'
+
+In frontend branch
