@@ -1,0 +1,157 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin: 50px;
+    background-color: #f4f4f4;
+}
+h1 {
+    color: #333;
+}
+
+.box1 {
+    flex: 1; /* Makes each box equal width */
+    padding: 20px;
+    background-color: lightblue;
+    text-align: center;
+    border-radius: 5px;
+    border: 0 solid black;
+    text-align: center;
+}
+
+.box3 {
+    flex: 1; /* Makes each box equal width */
+    padding: 20px;
+    background-color: lightblue;
+    text-align: center;
+    border-radius: 5px;
+    border: 0 solid black;
+    text-align: center;
+}
+
+.section{
+    display: flex;
+    justify-content: space-between; /* Spacing between columns */
+    gap: 10px; /* Optional: Adds space between columns */
+    width: 900px;
+    height: 400px;
+    margin: 5px;
+    padding: 10px;
+    background-color: lightskyblue;
+    margin: auto;
+    text-align: center;
+
+}
+
+.box2 {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    justify-items: center;
+    width: 300px;
+    margin: auto;
+    transition: all 0.3s ease-in-out; /* Smooth effect */
+}
+
+/* Hover Effect */
+.box2:hover {
+    background-color: darkgray; /* Change background on hover */
+    color: white; /* Change text color on hover */
+    transform: scale(1.05); /* Slightly enlarge the box */
+}
+
+/* Link Styling */
+.box2 a {
+    text-decoration: none; /* Remove underline */
+    color: inherit; /* Keep same text color */
+    font-weight: bold;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input {
+    margin: 10px 0;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+.register {
+    width: 400px;
+    margin: auto;
+    margin-top: 20px;
+    background-color: #53bdd8;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+
+}
+
+.login {
+    width: 300px;
+    margin: auto;
+    margin-top: 30px;
+    background-color: #a8bec4;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+
+}
+
+
+ul li {
+    padding: 10px;
+    list-style: none;
+    text-align: center;
+    font-size: large;
+    background-color: lightcyan; 
+    border-radius: 5px;
+    margin: 10px;
+    text-decoration: none;
+    color: inherit;
+    width: 300px;
+    margin: auto;
+    display: block;
+    transition: all 0.3s ease-in-out; /* Smooth effect */
+    margin-bottom: 10px; /* Adds space between links */
+    
+}
+
+
+ul a {
+    text-decoration: none;
+    color: inherit;
+    font-size: large;
+}
+
+ul :hover {
+    background-color: #333;
+    transition-timing-function: 0.5s;
+}

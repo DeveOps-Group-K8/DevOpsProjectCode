@@ -22,7 +22,7 @@ In Backend Branch
 
 In app branch
 
-## Commit from 'App Branch'
+## app Commit from 'App Branch'
 
 In Backend Branch
 
@@ -33,4 +33,17 @@ In App Branch
 ## Requirements commit to "app branch"
 
 In app branch
+
+## Commit from 'dev' branch again for game.html
+
+In dev Branch..
+
+## Commit from 'migrations branch'
+
+In migrations branch ..
+
+## Commit from 'others branch'
+
+In others branch ..
+
 
