@@ -10,17 +10,33 @@ In dev.. AGAINNNNN!!!!
 
 In feature branch..
 
-## Commit from 'dev' branch again for game.html
-
-In dev Branch..
-
 ## Commit from 'templates branch'
 
 In frontend branch
 
-## Commit from 'static' branch
+## Commit from 'App Barnch'
 
-In second frontend branch
+In Backend Branch 
+
+## model commit to "app" branch
+
+In app branch
+
+## app Commit from 'App Branch'
+
+In Backend Branch
+
+## Config commit to 'App Branch'
+
+In App Branch
+
+## Requirements commit to "app branch"
+
+In app branch
+
+## Commit from 'dev' branch again for game.html
+
+In dev Branch..
 
 ## Commit from 'migrations branch'
 
@@ -29,4 +45,5 @@ In migrations branch ..
 ## Commit from 'others branch'
 
 In others branch ..
+
 
