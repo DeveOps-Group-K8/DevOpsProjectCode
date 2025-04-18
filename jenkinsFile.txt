@@ -1,0 +1,20 @@
+pipeline {
+    agent any
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/DeveOps-Group-K8/DevOpsProjectCode.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                sh 'pip install -r requirements.txt'
+            }
+        }
+        stage('Deploy') {
+            steps {
+                sh 'python app.py'
+            }
+        }
+    }
+}
