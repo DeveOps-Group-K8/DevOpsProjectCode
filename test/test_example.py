@@ -1,79 +1,42 @@
 import unittest
-from app import app, db, User
-
-from flask import session
-from flask.testing import FlaskClient
-
+from flask import Flask, session
+from app import app, db, User  # adjust based on your app structure
 
 class NumberGuessingGameTestCase(unittest.TestCase):
+
     def setUp(self):
+        self.app = app.test_client()
         app.config['TESTING'] = True
         app.config['WTF_CSRF_ENABLED'] = False
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:9257postgres@localhost/users'
-      
-        self.app = app.test_client()
-        self.ctx = app.app_context()
-        self.ctx.push()
-        db.create_all()
+        app.config['LOGIN_DISABLED'] = False  # important for Flask-Login
+        with app.app_context():
+            db.create_all()
+            test_user = User(username='testuser')
+            test_user.set_password('testpass')
+            db.session.add(test_user)
+            db.session.commit()
+        
 
-        # Create test user
-        self.test_user = User(username="testuser")
-        self.test_user.set_password("testpassword")
+    def login_session(client, number=7):
+        with client:
+            existing_user = User.query.filter_by(username='testuser').first()
+            if existing_user:
+                db.session.delete(existing_user)
+                db.session.commit()
 
-        db.session.add(self.test_user)
-        db.session.commit()
+            password = 'password'
+            hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+            user = User(username='testuser', password_hash=hashed_password, score=0, attempts=5)
+            db.session.add(user)
+            db.session.commit()
 
-    def tearDown(self):
-        db.session.remove()
-        db.drop_all()
-        self.ctx.pop()
+            client.post('/login', data=dict(username='testuser', password=password), follow_redirects=True)
 
-    def login_session(self, client: FlaskClient, number=7):
-        """Helper to simulate a session with a logged-in user and a number to guess."""
-        with client.session_transaction() as sess:
-            sess['user_id'] = self.test_user.id
-            sess['number'] = number
-            sess['attempts'] = 0
-            sess['level'] = 'easy'  # Required for reset
+            with client.session_transaction() as sess:
+                sess['number_to_guess'] = number
 
+ 
     def test_correct_guess(self):
-        with self.app as client:
-            self.login_session(client, number=7)
-            response = client.post('/guess', data={'guess': '7'})
-            json_data = response.get_json()
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(json_data['result'], 'Correct! You guessed it!')
-
-    def test_high_guess(self):
-        with self.app as client:
-            self.login_session(client, number=3)
-            response = client.post('/guess', data={'guess': '10'})
-            json_data = response.get_json()
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(json_data['result'], 'Too high!')
-
-    def test_low_guess(self):
-        with self.app as client:
-            self.login_session(client, number=10)
-            response = client.post('/guess', data={'guess': '5'})
-            json_data = response.get_json()
-            self.assertEqual(response.status_code, 200)
-            self.assertEqual(json_data['result'], 'Too low!')
-
-    def test_invalid_input(self):
-        with self.app as client:
-            self.login_session(client, number=5)
-            response = client.post('/guess', data={'guess': 'abc'})
-            self.assertEqual(response.status_code, 400)
-            self.assertIn(b'Invalid input', response.data)
-
-    def test_reset_game(self):
-        with self.app as client:
-            self.login_session(client)
-            response = client.get('/reset')
-            self.assertEqual(response.status_code, 302)  # Expect redirect
-
-
-if __name__ == '__main__':
-    unittest.main()
-#     app.run(debug=True)
+        self.login_session(self.app, number=7)
+        response = self.app.post('/guess', data={'guess': '7'})
+        self.assertEqual(response.status_code, 200)

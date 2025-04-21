@@ -85,13 +85,28 @@ def login():
 
 
 
+@app.route('/config-check')
+def config_check():
+    return f"Testing Mode: {app.config['TESTING']}"
+
+
+@app.route('/user-check')
+def user_check():
+    if current_user.is_authenticated:
+        return f"Logged in as: {current_user.username}"
+    else:
+        return "No user is currently logged in."
+
+
 # Dashboard Page
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    #return render_template('dashboard.html', username=session['username'])
+    print(f"[DEBUG] Logged in user: {current_user.username}")
     return render_template('dashboard.html', username=current_user.username)
 
+
+ 
 @app.route('/guess', methods=['POST'])
 @login_required
 def guess():
