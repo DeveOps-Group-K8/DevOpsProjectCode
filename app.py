@@ -85,44 +85,42 @@ def login():
 
 
 
+@app.route('/config-check')
+def config_check():
+    return f"Testing Mode: {app.config['TESTING']}"
+
+
+@app.route('/user-check')
+def user_check():
+    if current_user.is_authenticated:
+        return f"Logged in as: {current_user.username}"
+    else:
+        return "No user is currently logged in."
+
+
 # Dashboard Page
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    #return render_template('dashboard.html', username=session['username'])
+    print(f"[DEBUG] Logged in user: {current_user.username}")
     return render_template('dashboard.html', username=current_user.username)
 
+
+ 
 @app.route('/guess', methods=['POST'])
-def guess_number():
-    guess = request.form['guess']
-    user = User.query.filter_by(id=session['user_id']).first()
+@login_required
+def guess():
+    guess = int(request.form['guess'])
+    number_to_guess = session.get('number_to_guess')
     
-    if user:
-        # Decrease attempts
-        user.attempts -= 1
-        
-        # Check if the guess is correct, and update score
-        if guess == str(session.get('random_number')):  # Retrieve 'random_number' from the session
-            user.score += 10  # Adjust the score increment as per your game rules
-            result = 'Correct!'
-        else:
-            result = 'Wrong guess.'
-        
-        # Save changes to database
+    if guess == number_to_guess:
+        current_user.score += 1
         db.session.commit()
-        
-        # Check if attempts are over
-        if user.attempts <= 0:
-            result = 'Game Over'
-        
-        # Return updated attempts and score to frontend
-        return jsonify({
-            'result': result,
-            'attempts': user.attempts,
-            'score': user.score
-        })
-    
-    return jsonify({'error': 'User not found'}), 404
+        return jsonify({'result': 'Correct! You guessed it!'})
+    elif guess < number_to_guess:
+        return jsonify({'result': 'Too low!'})
+    else:
+        return jsonify({'result': 'Too high!'})
 
 
 # Game Page (Handles Easy, Medium, Hard)
@@ -206,6 +204,12 @@ def leaderboard():
     return render_template('leaderboard.html', leaderboard=leaderboard)
     #return render_template('leaderboard.html', leaderboard=leaderboard)
 
+@app.route('/reset')
+def reset_game():
+    session.pop('number', None)
+    session.pop('attempts', None)
+    level = session.get('level', 'easy')  # fallback level
+    return redirect(url_for('play_game', level=level))
 
 # Logout Route
 @app.route('/logout')

@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="1.310" timestamp="2025-04-21T16:33:00.200337+01:00" hostname="Charles-Standad"><testcase classname="test.test_example.NumberGuessingGameTestCase" name="test_correct_guess" time="0.354"><failure message="sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint &quot;user_username_key&quot;&#10;DETAIL:  Key (username)=(testuser) already exists.&#10;&#10;[SQL: INSERT INTO &quot;user&quot; (username, password_hash, score, attempts) VALUES (%(username)s, %(password_hash)s, %(score)s, %(attempts)s) RETURNING &quot;user&quot;.id]&#10;[parameters: {'username': 'testuser', 'password_hash': '$2b$12$ql72g3eeWtsyNhvRstFjDuUtUuNcVsC8lxx2wFP1jlnoFoVsMdRbi', 'score': 0, 'attempts': 5}]&#10;(Background on this error at: https://sqlalche.me/e/20/gkpj)">self = &lt;sqlalchemy.engine.base.Connection object at 0x00000186C466DBD0&gt;
+dialect = &lt;sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x00000186C46782F0&gt;
+context = &lt;sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x00000186C46D0050&gt;
+statement = &lt;sqlalchemy.dialects.postgresql.base.PGCompiler object at 0x00000186C466E490&gt;
+parameters = [{'attempts': 5, 'password_hash': '$2b$12$ql72g3eeWtsyNhvRstFjDuUtUuNcVsC8lxx2wFP1jlnoFoVsMdRbi', 'score': 0, 'username': 'testuser'}]
+
+    def _exec_single_context(
+        self,
+        dialect: Dialect,
+        context: ExecutionContext,
+        statement: Union[str, Compiled],
+        parameters: Optional[_AnyMultiExecuteParams],
+    ) -&gt; CursorResult[Any]:
+        """continue the _execute_context() method for a single DBAPI
+        cursor.execute() or cursor.executemany() call.
+    
+        """
+        if dialect.bind_typing is BindTyping.SETINPUTSIZES:
+            generic_setinputsizes = context._prepare_set_input_sizes()
+    
+            if generic_setinputsizes:
+                try:
+                    dialect.do_set_input_sizes(
+                        context.cursor, generic_setinputsizes, context
+                    )
+                except BaseException as e:
+                    self._handle_dbapi_exception(
+                        e, str(statement), parameters, None, context
+                    )
+    
+        cursor, str_statement, parameters = (
+            context.cursor,
+            context.statement,
+            context.parameters,
+        )
+    
+        effective_parameters: Optional[_AnyExecuteParams]
+    
+        if not context.executemany:
+            effective_parameters = parameters[0]
+        else:
+            effective_parameters = parameters
+    
+        if self._has_events or self.engine._has_events:
+            for fn in self.dispatch.before_cursor_execute:
+                str_statement, effective_parameters = fn(
+                    self,
+                    cursor,
+                    str_statement,
+                    effective_parameters,
+                    context,
+                    context.executemany,
+                )
+    
+        if self._echo:
+            self._log_info(str_statement)
+    
+            stats = context._get_cache_stats()
+    
+            if not self.engine.hide_parameters:
+                self._log_info(
+                    "[%s] %r",
+                    stats,
+                    sql_util._repr_params(
+                        effective_parameters,
+                        batches=10,
+                        ismulti=context.executemany,
+                    ),
+                )
+            else:
+                self._log_info(
+                    "[%s] [SQL parameters hidden due to hide_parameters=True]",
+                    stats,
+                )
+    
+        evt_handled: bool = False
+        try:
+            if context.execute_style is ExecuteStyle.EXECUTEMANY:
+                effective_parameters = cast(
+                    "_CoreMultiExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_executemany:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_executemany(
+                        cursor,
+                        str_statement,
+                        effective_parameters,
+                        context,
+                    )
+            elif not effective_parameters and context.no_parameters:
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute_no_params:
+                        if fn(cursor, str_statement, context):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+                    self.dialect.do_execute_no_params(
+                        cursor, str_statement, context
+                    )
+            else:
+                effective_parameters = cast(
+                    "_CoreSingleExecuteParams", effective_parameters
+                )
+                if self.dialect._has_events:
+                    for fn in self.dialect.dispatch.do_execute:
+                        if fn(
+                            cursor,
+                            str_statement,
+                            effective_parameters,
+                            context,
+                        ):
+                            evt_handled = True
+                            break
+                if not evt_handled:
+&gt;                   self.dialect.do_execute(
+                        cursor, str_statement, effective_parameters, context
+                    )
+
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1964: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x00000186C46782F0&gt;
+cursor = &lt;cursor object at 0x00000186C46AFD80; closed: -1&gt;
+statement = 'INSERT INTO "user" (username, password_hash, score, attempts) VALUES (%(username)s, %(password_hash)s, %(score)s, %(attempts)s) RETURNING "user".id'
+parameters = {'attempts': 5, 'password_hash': '$2b$12$ql72g3eeWtsyNhvRstFjDuUtUuNcVsC8lxx2wFP1jlnoFoVsMdRbi', 'score': 0, 'username': 'testuser'}
+context = &lt;sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x00000186C46D0050&gt;
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+&gt;       cursor.execute(statement, parameters)
+E       psycopg2.errors.UniqueViolation: duplicate key value violates unique constraint "user_username_key"
+E       DETAIL:  Key (username)=(testuser) already exists.
+
+.venv\Lib\site-packages\sqlalchemy\engine\default.py:942: UniqueViolation
+
+The above exception was the direct cause of the following exception:
+
+self = &lt;test_example.NumberGuessingGameTestCase testMethod=test_correct_guess&gt;
+
+    def setUp(self):
+        self.app = app.test_client()
+        app.config['TESTING'] = True
+        app.config['WTF_CSRF_ENABLED'] = False
+        app.config['LOGIN_DISABLED'] = False  # important for Flask-Login
+        with app.app_context():
+            db.create_all()
+            test_user = User(username='testuser')
+            test_user.set_password('testpass')
+            db.session.add(test_user)
+&gt;           db.session.commit()
+
+test\test_example.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+.venv\Lib\site-packages\sqlalchemy\orm\scoping.py:599: in commit
+    return self._proxied.commit()
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:2032: in commit
+    trans.commit(_to_root=True)
+&lt;string&gt;:2: in commit
+    ???
+.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:1313: in commit
+    self._prepare_impl()
+&lt;string&gt;:2: in _prepare_impl
+    ???
+.venv\Lib\site-packages\sqlalchemy\orm\state_changes.py:139: in _go
+    ret_value = fn(self, *arg, **kw)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:1288: in _prepare_impl
+    self.session.flush()
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:4353: in flush
+    self._flush(objects)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:4488: in _flush
+    with util.safe_reraise():
+.venv\Lib\site-packages\sqlalchemy\util\langhelpers.py:146: in __exit__
+    raise exc_value.with_traceback(exc_tb)
+.venv\Lib\site-packages\sqlalchemy\orm\session.py:4449: in _flush
+    flush_context.execute()
+.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:466: in execute
+    rec.execute(self)
+.venv\Lib\site-packages\sqlalchemy\orm\unitofwork.py:642: in execute
+    util.preloaded.orm_persistence.save_obj(
+.venv\Lib\site-packages\sqlalchemy\orm\persistence.py:93: in save_obj
+    _emit_insert_statements(
+.venv\Lib\site-packages\sqlalchemy\orm\persistence.py:1233: in _emit_insert_statements
+    result = connection.execute(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1416: in execute
+    return meth(
+.venv\Lib\site-packages\sqlalchemy\sql\elements.py:516: in _execute_on_connection
+    return connection._execute_clauseelement(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1638: in _execute_clauseelement
+    ret = self._execute_context(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1843: in _execute_context
+    return self._exec_single_context(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1983: in _exec_single_context
+    self._handle_dbapi_exception(
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:2352: in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+.venv\Lib\site-packages\sqlalchemy\engine\base.py:1964: in _exec_single_context
+    self.dialect.do_execute(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = &lt;sqlalchemy.dialects.postgresql.psycopg2.PGDialect_psycopg2 object at 0x00000186C46782F0&gt;
+cursor = &lt;cursor object at 0x00000186C46AFD80; closed: -1&gt;
+statement = 'INSERT INTO "user" (username, password_hash, score, attempts) VALUES (%(username)s, %(password_hash)s, %(score)s, %(attempts)s) RETURNING "user".id'
+parameters = {'attempts': 5, 'password_hash': '$2b$12$ql72g3eeWtsyNhvRstFjDuUtUuNcVsC8lxx2wFP1jlnoFoVsMdRbi', 'score': 0, 'username': 'testuser'}
+context = &lt;sqlalchemy.dialects.postgresql.psycopg2.PGExecutionContext_psycopg2 object at 0x00000186C46D0050&gt;
+
+    def do_execute(self, cursor, statement, parameters, context=None):
+&gt;       cursor.execute(statement, parameters)
+E       sqlalchemy.exc.IntegrityError: (psycopg2.errors.UniqueViolation) duplicate key value violates unique constraint "user_username_key"
+E       DETAIL:  Key (username)=(testuser) already exists.
+E       
+E       [SQL: INSERT INTO "user" (username, password_hash, score, attempts) VALUES (%(username)s, %(password_hash)s, %(score)s, %(attempts)s) RETURNING "user".id]
+E       [parameters: {'username': 'testuser', 'password_hash': '$2b$12$ql72g3eeWtsyNhvRstFjDuUtUuNcVsC8lxx2wFP1jlnoFoVsMdRbi', 'score': 0, 'attempts': 5}]
+E       (Background on this error at: https://sqlalche.me/e/20/gkpj)
+
+.venv\Lib\site-packages\sqlalchemy\engine\default.py:942: IntegrityError</failure></testcase></testsuite></testsuites>
