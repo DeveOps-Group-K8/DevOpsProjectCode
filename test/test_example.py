@@ -1,5 +1,6 @@
 import unittest
 from app import app, db, User
+
 from flask import session
 from flask.testing import FlaskClient
 
