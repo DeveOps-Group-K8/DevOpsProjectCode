@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="4" skipped="0" tests="5" time="2.749" timestamp="2025-04-21T14:53:18.385927+01:00" hostname="Charles-Standad"><testcase classname="test.test_example.NumberGuessingGameTestCase" name="test_correct_guess" time="0.400"><failure message="AssertionError: 401 != 200">self = &lt;test_example.NumberGuessingGameTestCase testMethod=test_correct_guess&gt;
+
+    def test_correct_guess(self):
+        with self.app as client:
+            self.login_session(client, number=7)
+            response = client.post('/guess', data={'guess': '7'})
+            json_data = response.get_json()
+&gt;           self.assertEqual(response.status_code, 200)
+E           AssertionError: 401 != 200
+
+test\test_example.py:43: AssertionError</failure></testcase><testcase classname="test.test_example.NumberGuessingGameTestCase" name="test_high_guess" time="0.316"><failure message="AssertionError: 401 != 200">self = &lt;test_example.NumberGuessingGameTestCase testMethod=test_high_guess&gt;
+
+    def test_high_guess(self):
+        with self.app as client:
+            self.login_session(client, number=3)
+            response = client.post('/guess', data={'guess': '10'})
+            json_data = response.get_json()
+&gt;           self.assertEqual(response.status_code, 200)
+E           AssertionError: 401 != 200
+
+test\test_example.py:51: AssertionError</failure></testcase><testcase classname="test.test_example.NumberGuessingGameTestCase" name="test_invalid_input" time="0.310"><failure message="AssertionError: 401 != 400">self = &lt;test_example.NumberGuessingGameTestCase testMethod=test_invalid_input&gt;
+
+    def test_invalid_input(self):
+        with self.app as client:
+            self.login_session(client, number=5)
+            response = client.post('/guess', data={'guess': 'abc'})
+&gt;           self.assertEqual(response.status_code, 400)
+E           AssertionError: 401 != 400
+
+test\test_example.py:66: AssertionError</failure></testcase><testcase classname="test.test_example.NumberGuessingGameTestCase" name="test_low_guess" time="0.306"><failure message="AssertionError: 401 != 200">self = &lt;test_example.NumberGuessingGameTestCase testMethod=test_low_guess&gt;
+
+    def test_low_guess(self):
+        with self.app as client:
+            self.login_session(client, number=10)
+            response = client.post('/guess', data={'guess': '5'})
+            json_data = response.get_json()
+&gt;           self.assertEqual(response.status_code, 200)
+E           AssertionError: 401 != 200
+
+test\test_example.py:59: AssertionError</failure></testcase><testcase classname="test.test_example.NumberGuessingGameTestCase" name="test_reset_game" time="0.310" /></testsuite></testsuites>

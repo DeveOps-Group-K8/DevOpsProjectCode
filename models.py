@@ -13,6 +13,7 @@ class User(db.Model, UserMixin):
     username = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(200), nullable=False)
     score = db.Column(db.Integer, default=0, nullable=False)
+    attempts = db.Column(db.Integer, default=5, nullable=False) 
 
     def set_password(self, password):
         """Hash the password before storing it."""

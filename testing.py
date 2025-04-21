@@ -45,7 +45,7 @@ def index():
 class MyTestCase(TestCase):
     def create_app(self):
         app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:9257postgres@localhost/users'
         return app
 
     def setUp(self):
