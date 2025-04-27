@@ -18,7 +18,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:9257postgres@loca
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'supersecretkey'
 
-
 # Initialize the database object only once
 migrate = Migrate(app, db)
 db.init_app(app)
@@ -31,12 +30,10 @@ login_manager.init_app(app)
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-
 # Home Page (Landing Page)
 @app.route('/')
 def home():
     return render_template('index.html')
-
 
 # Register Page
 @app.route('/register', methods=['GET', 'POST'])
@@ -57,11 +54,10 @@ def register():
         db.session.add(new_user)
         db.session.commit()
         
-        flash("Registration successful! Please log in.", "success")
+        flash("Registration Successful!", "success")
         return redirect(url_for('login'))
     
     return render_template('register.html')
-
 
 # Login Page
 @app.route('/login', methods=['GET', 'POST'])
@@ -75,20 +71,16 @@ def login():
         if user and user.check_password(password):
             # Log the user in using Flask-Login
             login_user(user)  # This will manage the session automatically
-            
-            flash("Login successful!", "success")
+            flash(f"Welcome back, {user.username}!", "success")
             return redirect(url_for('dashboard'))  # Redirect to the dashboard
         else:
             flash("Invalid credentials! Try again.", "danger")
     
     return render_template('login.html')
 
-
-
 @app.route('/config-check')
 def config_check():
     return f"Testing Mode: {app.config['TESTING']}"
-
 
 @app.route('/user-check')
 def user_check():
@@ -97,7 +89,6 @@ def user_check():
     else:
         return "No user is currently logged in."
 
-
 # Dashboard Page
 @app.route('/dashboard')
 @login_required
@@ -105,12 +96,15 @@ def dashboard():
     print(f"[DEBUG] Logged in user: {current_user.username}")
     return render_template('dashboard.html', username=current_user.username)
 
-
- 
 @app.route('/guess', methods=['POST'])
 @login_required
 def guess():
-    guess = int(request.form['guess'])
+    try:
+        guess = int(request.form['guess'])
+    except ValueError:
+        flash("Invalid guess! Please enter a valid number.", "danger")
+        return redirect(url_for('play_game', level=session.get('level', 'easy')))
+    
     number_to_guess = session.get('number_to_guess')
     
     if guess == number_to_guess:
@@ -121,7 +115,6 @@ def guess():
         return jsonify({'result': 'Too low!'})
     else:
         return jsonify({'result': 'Too high!'})
-
 
 # Game Page (Handles Easy, Medium, Hard)
 @app.route('/play/<level>', methods=['GET', 'POST'])
@@ -141,6 +134,7 @@ def play_game(level):
         session['random_number'] = random.randint(1, levels[level])
         session['attempts'] = 5  # Total number of attempts
         session['game_status'] = None  # Track the game status (win/loss)
+        session['level'] = level  # Store the current level
 
     # Game variables
     correct_number = session['random_number']
@@ -194,19 +188,16 @@ def play_game(level):
                            correct_number=correct_number,
                            game_status=game_status)
 
-
 # Leaderboard
 @app.route('/leaderboard')
 def leaderboard():
-    
     leaderboard_data = User.query.order_by(User.score.desc()).all()
     leaderboard = [{"username": user.username, "score": user.score} for user in leaderboard_data]
     return render_template('leaderboard.html', leaderboard=leaderboard)
-    #return render_template('leaderboard.html', leaderboard=leaderboard)
 
 @app.route('/reset')
 def reset_game():
-    session.pop('number', None)
+    session.pop('random_number', None)
     session.pop('attempts', None)
     level = session.get('level', 'easy')  # fallback level
     return redirect(url_for('play_game', level=level))
@@ -218,7 +209,6 @@ def logout():
     session.clear()
     flash("You have been logged out successfully.", "info")
     return redirect(url_for('home'))
-
 
 # Run the application
 if __name__ == "__main__":
