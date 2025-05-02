@@ -14,8 +14,8 @@ from models import User, db
 app = Flask(__name__)
 
 # PostgreSQL Database Configuration
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:9257postgres@localhost/users'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://devuser:devpass@localhost/devopsdb'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:9257postgres@localhost/users'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://devuser:devpass@localhost/devopsdb'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'supersecretkey'
