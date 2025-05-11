@@ -28,3 +28,4 @@ jobs:
     - name: Run Flask app (for testing)
       run: |
         echo "Flask app ready."
+        pytest
